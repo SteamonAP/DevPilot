@@ -29,6 +29,8 @@ export function useCurrentUser() {
         throw error;
       }
     },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   });
 }
 
@@ -40,9 +42,10 @@ export function useLogout() {
     mutationFn: async () => {
       await api.logout();
     },
-    onSuccess: () => {
+    onSettled: async () => {
       setAuthCookie(false);
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
+      queryClient.setQueryData(queryKeys.auth.me(), null);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
       router.replace("/login");
     },
   });
