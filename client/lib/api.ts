@@ -1,3 +1,5 @@
+import { TiLeaf } from "react-icons/ti";
+
 export type IndexStatus = "PENDING" | "INDEXING" | "READY" | "FAILED";
 
 export type User = {
@@ -35,6 +37,28 @@ export type IndexStatusResponse = {
   chunkCount: number;
   indexedAt: string | null;
   errorMessage: string | null;
+};
+
+export type ChatSession = {
+  id: string;
+  repositoryId: string;
+  title: string;
+  createdAt: string;
+};
+
+export type Citation = {
+  filePath: string;
+  startLine: number | null;
+  endLine: number | null;
+  language: string | null;
+};
+
+export type ChatMessage = {
+  id: string;
+  role: "USER" | "ASSISTANT";
+  content: string;
+  citations: Citation[];
+  createdAt: string;
 };
 
 export class ApiError extends Error {
@@ -100,4 +124,16 @@ export const api = {
     apiFetch<Repository>(`/api/repos/${id}/index`, { method: "POST" }),
   indexStatus: (id: string) =>
     apiFetch<IndexStatusResponse>(`/api/repos/${id}/status`),
+
+  createSession: (repositoryId: string, title?: string) =>
+    apiFetch<ChatSession>("/api/chat/sessions", {
+      method: "POST",
+      body: JSON.stringify({ repositoryId, title }),
+    }),
+  listSessions: (repositoryId: string) =>
+    apiFetch<ChatSession[]>(
+      `/api/chat/sessions?repositoryId=${encodeURIComponent(repositoryId)}`,
+    ),
+  getMessages: (sessionId: string) =>
+    apiFetch<ChatMessage[]>(`/api/chat/sessions/${sessionId}`),
 };
